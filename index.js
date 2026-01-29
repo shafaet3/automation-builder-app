@@ -4,27 +4,27 @@ import cors from "cors";
 import dotenv from "dotenv";
 import automationRoutes from "./routes/automationRoutes.js";
 import emailRoutes from "./routes/emailRoutes.js";
+
 dotenv.config();
 
 const app = express();
 
-// Middleware
+// CORS FIX (Express v5 Safe)
 app.use(cors({
   origin: [
     "http://localhost:3000",
     "https://automation-builder-frontend.vercel.app"
   ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"],
 }));
 
-app.options("*", cors());
 app.use(express.json());
 
 // Routes
 app.use("/automations", automationRoutes);
 app.use("/emails", emailRoutes);
+
 // Health check
 app.get("/", (req, res) => {
   res.json({ status: "OK" });
@@ -36,23 +36,24 @@ const PORT = process.env.PORT || 5000;
 async function connectDB() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log("✅ Connected to MongoDB Atlas!");
+    console.log("Connected to MongoDB Atlas!");
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
     });
+
   } catch (err) {
-    console.error("❌ MongoDB Connection Error:", err.message);
+    console.error("MongoDB Connection Error:", err.message);
   }
 }
 
 connectDB();
 
-// Prevent crash on async errors
+// Prevent crash
 process.on("uncaughtException", err => {
-  console.error("❌ Uncaught Exception:", err.message);
+  console.error("Uncaught Exception:", err.message);
 });
 
 process.on("unhandledRejection", err => {
-  console.error("❌ Unhandled Promise Rejection:", err);
+  console.error("Unhandled Promise Rejection:", err);
 });
